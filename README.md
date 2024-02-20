@@ -5,3 +5,5 @@ Lab1-Finished contains all of the code as well as the pre and post lab questions
 Lab2-Finished contains all of the code as well as the pre and post lab questions. Please refer to that folder for lab 2.
 
 Lab3-Finished contains all of the code as well as the pre and post lab questions. Please refer to that folder for lab 3.
+
+Lab4-Finished contains all of the code as well as the pre and post lab questions. Please refer to that folder for lab 4.
