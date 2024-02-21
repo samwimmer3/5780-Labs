@@ -19,42 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
+//Once a character is typed it will transmit the given char
 void transmitChar(char x)
 {
 	//Check to see if empty
@@ -69,7 +36,7 @@ void transmitChar(char x)
 		USART3 -> TDR = x;
 }
 
-
+//Loops through the char array and transmits every character
 void transmitString(char* x)
 {	
 	int pos = 0;
@@ -90,7 +57,7 @@ void transmitString(char* x)
 	}
 }
 
-
+//Checks the recieved register to make sure a char is entered and returns it
 char recievedChar(void)
 {
 	while(!(USART3->ISR & USART_ISR_RXNE))
@@ -103,7 +70,9 @@ char recievedChar(void)
 
 
 
-
+volatile char input; //input from keyboard
+volatile int colorFlag; //flag for a color being input
+volatile int actionFlag; //flag for a action number being input
 
 /**
   * @brief  The application entry point.
@@ -111,29 +80,16 @@ char recievedChar(void)
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
+	HAL_Init();
+	SystemClock_Config();
 	
-	//USING PIN PB10 = USART3 TX     and     PB11 = USART RX
+	//USING PIN     and     PB11 = USART RX
 	
 	//Enable Usart 3
 	RCC-> APB1ENR = RCC_APB1ENR_USART3EN;
 	
 	//Enable pins and set alternative function mode
-  RCC-> AHBENR |= RCC_AHBENR_GPIOBEN;
+  	RCC-> AHBENR |= RCC_AHBENR_GPIOBEN;
 	GPIOB->MODER |= (1<<23) | (1<<21);
 	GPIOB->MODER &= ~(1<<22);
 	GPIOB->MODER &= ~(1<<20);
@@ -194,13 +150,14 @@ int main(void)
 	GPIOC->PUPDR &= ~(1<<18);
 	GPIOC->PUPDR &= ~(1<<19);
 	
-	//One high and one low
+	//ALL LEDS OFF
 	GPIOC->ODR &= ~(1<<6);
 	GPIOC->ODR &= ~(1<<7);
 	GPIOC->ODR &= ~(1<<8);
 	GPIOC->ODR &= ~(1<<9);
 	
-	
+	//NVIC 
+	NVIC_EnableIRQ(USART3_4_IRQn);
 	
 	
 	
@@ -209,36 +166,97 @@ int main(void)
   while (1)
   {
 		
-    /* USER CODE END WHILE */
+		//Transmit a character
 		//HAL_Delay(1500);
 		//transmitChar('a');
+
+		//Transmit a string
 		//transmitString("Samuel");
 		
-		char returnedchar = recievedChar();
 		
-		switch(returnedchar){
+		//PART ONE CHECKOFF------------------------------
+		//char returnedchar = recievedChar();
+		//switch(returnedchar){
+			//case 'g':
+				//transmitChar('g');
+				//GPIOC->ODR ^= (1<<9);
+			//	break;
+		//	case 'r':
+				//transmitChar('r');
+			//	GPIOC->ODR ^= (1<<6);
+			//	break;
+			//case 'o':
+				//transmitChar('o');
+			//	GPIOC->ODR ^= (1<<8);
+			//	break;
+			//case 'b':
+				//transmitChar('b');
+			//	GPIOC->ODR ^= (1<<7);
+			//	break;
+			//default:
+			//		transmitString("Error. Must click correct color");	
+		//}
+		//--------------------------------------------------	
+		
+		//Part 2 Checkoff -----------------------------------
+		int color = 0;
+		transmitString("\n\rCMD: ");
+		
+		//wait for color input
+		while(!colorFlag){}
+		actionFlag = 0;
+
+		//first switch statment determines the color and sets the number	
+		switch(input){
 			case 'g':
-				transmitChar('g');
-				GPIOC->ODR ^= (1<<9);
+				transmitString("Green ");
+				color = 9;
 				break;
 			case 'r':
-				transmitChar('r');
-				GPIOC->ODR ^= (1<<6);
+				transmitString("Red ");
+				color = 6;
 				break;
 			case 'o':
-				transmitChar('o');
-				GPIOC->ODR ^= (1<<8);
+				transmitString("Orange ");
+				color = 8;
 				break;
 			case 'b':
-				transmitChar('b');
-				GPIOC->ODR ^= (1<<7);
+				transmitString("Blue ");
+				color = 7;
 				break;
 			default:
-					transmitString("Error");
+					transmitString("Error. Must click correct color");
 			
 		}
-				
+		
+		//wait for action input
+		while(!actionFlag){}
+		
+		//As long as a color is input correctly this will determine the action
+		if(color != 0)
+		{
+			switch(input){
+			case '0':
+				transmitString("OFF ");
+				GPIOC->ODR &= ~(1<<color);
+				break;
+			case '1':
+				transmitString("ON ");
+				GPIOC->ODR |= (1<<color);
+				break;
+			case '2':
+				transmitString("Toggle ");
+				GPIOC->ODR ^= (1<<color);
+				break;
+			default:
+					transmitString("Error. Must click correct powermode ");
 			
+		}
+		}
+		
+		//Reset Flags
+		actionFlag = 0;	
+		colorFlag = 0;
 		
 
     /* USER CODE BEGIN 3 */
@@ -248,6 +266,13 @@ int main(void)
 
 
 
+
+void USART3_4_IRQHandler(void)
+{
+	input = recievedChar();
+	colorFlag = 1;
+	actionFlag = 1;
+}  
 
 
 
