@@ -19,9 +19,42 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-void SystemClock_Config(void);
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 
-//Once a character is typed it will transmit the given char
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 void transmitChar(char x)
 {
 	//Check to see if empty
@@ -36,7 +69,7 @@ void transmitChar(char x)
 		USART3 -> TDR = x;
 }
 
-//Loops through the char array and transmits every character
+
 void transmitString(char* x)
 {	
 	int pos = 0;
@@ -57,7 +90,7 @@ void transmitString(char* x)
 	}
 }
 
-//Checks the recieved register to make sure a char is entered and returns it
+
 char recievedChar(void)
 {
 	while(!(USART3->ISR & USART_ISR_RXNE))
@@ -70,9 +103,9 @@ char recievedChar(void)
 
 
 
-volatile char input; //input from keyboard
-volatile int colorFlag; //flag for a color being input
-volatile int actionFlag; //flag for a action number being input
+volatile char input;
+volatile int colorFlag;
+volatile int actionFlag;
 
 /**
   * @brief  The application entry point.
@@ -80,8 +113,21 @@ volatile int actionFlag; //flag for a action number being input
   */
 int main(void)
 {
-	HAL_Init();
-	SystemClock_Config();
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
 	
 	//USING PIN     and     PB11 = USART RX
 	
@@ -89,7 +135,7 @@ int main(void)
 	RCC-> APB1ENR = RCC_APB1ENR_USART3EN;
 	
 	//Enable pins and set alternative function mode
-  	RCC-> AHBENR |= RCC_AHBENR_GPIOBEN;
+  RCC-> AHBENR |= RCC_AHBENR_GPIOBEN;
 	GPIOB->MODER |= (1<<23) | (1<<21);
 	GPIOB->MODER &= ~(1<<22);
 	GPIOB->MODER &= ~(1<<20);
@@ -166,13 +212,14 @@ int main(void)
   while (1)
   {
 		
-		//Transmit a character
+    /* USER CODE END WHILE */
 		//HAL_Delay(1500);
 		//transmitChar('a');
-
-		//Transmit a string
 		//transmitString("Samuel");
 		
+		//interrupt 
+		//save two variables
+		//nested switches
 		
 		//PART ONE CHECKOFF------------------------------
 		//char returnedchar = recievedChar();
@@ -198,15 +245,12 @@ int main(void)
 		//}
 		//--------------------------------------------------	
 		
-		//Part 2 Checkoff -----------------------------------
 		int color = 0;
 		transmitString("\n\rCMD: ");
 		
-		//wait for color input
 		while(!colorFlag){}
 		actionFlag = 0;
-
-		//first switch statment determines the color and sets the number	
+			
 		switch(input){
 			case 'g':
 				transmitString("Green ");
@@ -229,10 +273,8 @@ int main(void)
 			
 		}
 		
-		//wait for action input
 		while(!actionFlag){}
-		
-		//As long as a color is input correctly this will determine the action
+			
 		if(color != 0)
 		{
 			switch(input){
@@ -253,8 +295,7 @@ int main(void)
 			
 		}
 		}
-		
-		//Reset Flags
+			
 		actionFlag = 0;	
 		colorFlag = 0;
 		
