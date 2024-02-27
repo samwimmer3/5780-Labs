@@ -19,42 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
+//This function transmits a single char
 void transmitChar(char x)
 {
 	//Check to see if empty
@@ -69,7 +37,7 @@ void transmitChar(char x)
 		USART3 -> TDR = x;
 }
 
-
+//This function loops through and transmits a full string
 void transmitString(char* x)
 {	
 	int pos = 0;
@@ -90,7 +58,7 @@ void transmitString(char* x)
 	}
 }
 
-
+//This function is called and waits until it has recieved a char
 char recievedChar(void)
 {
 	while(!(USART3->ISR & USART_ISR_RXNE))
@@ -102,7 +70,7 @@ char recievedChar(void)
 }
 
 
-
+//Global Variables
 volatile char input;
 volatile int colorFlag;
 volatile int actionFlag;
@@ -113,18 +81,9 @@ volatile int actionFlag;
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
@@ -245,6 +204,9 @@ int main(void)
 		//}
 		//--------------------------------------------------	
 		
+		
+		
+		//Final Check Off----------------------------------
 		int color = 0;
 		transmitString("\n\rCMD: ");
 		
@@ -299,6 +261,8 @@ int main(void)
 		actionFlag = 0;	
 		colorFlag = 0;
 		
+		//FINISHED LAB----------------------------------------------
+		
 
     /* USER CODE BEGIN 3 */
   }
@@ -307,7 +271,7 @@ int main(void)
 
 
 
-
+//Handler for Usart that takes a character and sets flags
 void USART3_4_IRQHandler(void)
 {
 	input = recievedChar();
