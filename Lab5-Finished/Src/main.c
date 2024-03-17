@@ -19,42 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -62,11 +30,6 @@ void SystemClock_Config(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -78,11 +41,10 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-	//Enable GPIO B and C 
-  RCC-> AHBENR |= RCC_AHBENR_GPIOBEN;
-	RCC-> AHBENR |= RCC_AHBENR_GPIOCEN;
-	
-	
+	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+	RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
+	RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
+
 	/////////LED
 	//set pins to general purpose output mode in the moder register
 	GPIOC->MODER |= (1<<14) | (1<<12);
@@ -124,6 +86,8 @@ int main(void)
 	//////////////////////////////////
 	
 	
+	
+	
 	//PB11 to AF, open drain, and I2C2_SDA for AF
 	GPIOB -> MODER |= (1<<23);
 	GPIOB -> MODER &= ~(1<<22);
@@ -135,9 +99,8 @@ int main(void)
 	GPIOB -> AFR[1] &= ~(1<<13);
 	GPIOB -> AFR[1] |= (1<<12);
 	//-------------------------------------------
-	
-	
-	
+
+
 	//PB13 to AF, open drain, and I2C2_SCL for AF
 	GPIOB -> MODER |= (1<<27);
 	GPIOB -> MODER &= ~(1<<26);
@@ -148,124 +111,77 @@ int main(void)
 	GPIOB -> AFR[1] |= (1<<22);
 	GPIOB -> AFR[1] &= ~(1<<21);
 	GPIOB -> AFR[1] |= (1<<20);
-	//-------------------------------------------	
-	
-	
+	//------------------------------------------
+
 	//PB14 to output, push pull and initialize high
 	GPIOB -> MODER &= ~(1<<29);
 	GPIOB -> MODER |=  (1<<28);
 	
 	GPIOB -> OTYPER &= ~(1<<14);
 	
-	GPIOC->ODR |= (1<<14);
-	//-------------------------------------------		
-	
-	
+	GPIOB->ODR |= (1<<14);
+	//-------------------------------------------	
+
 	//PC0 to output, push pull and initialize high
-	GPIOC -> MODER |= (1<<1);
-	GPIOC -> MODER &= ~(1<<0);
+	GPIOC -> MODER |= (1<<0);
+	GPIOC -> MODER &= ~(1<<1);
 	
-	GPIOB -> OTYPER |= (1<<0);
+	GPIOC -> OTYPER &= ~(1<<0);
 	
 	GPIOC->ODR |= (1<<0);
-	//-------------------------------------------		
-	
-	
-	//Enable I2C2
-	RCC -> APB1ENR |= RCC_APB1ENR_I2C2EN;
-	
-	
-	///////////// TIMINGR
-	//PRESC == 1
-	I2C2 -> TIMINGR |= (1<<28);
-	I2C2 -> TIMINGR &= ~(1<<29);
-	I2C2 -> TIMINGR &= ~(1<<30);
-	I2C2 -> TIMINGR &= ~(1<<31);
-	
-	//SCLL == 0x13 = 00010011
-	I2C2 -> TIMINGR &= ~(1<<7);
-	I2C2 -> TIMINGR &= ~(1<<6);
-	I2C2 -> TIMINGR &= ~(1<<5);
-	I2C2 -> TIMINGR |= (1<<4);
-	I2C2 -> TIMINGR &= ~(1<<3);
-	I2C2 -> TIMINGR &= ~(1<<2);
-	I2C2 -> TIMINGR |= (1<<1);
-	I2C2 -> TIMINGR |= (1<<0);
-	
-	//SCLH == 0xF = 00001111
-	I2C2 -> TIMINGR &= ~(1<<15);
-	I2C2 -> TIMINGR &= ~(1<<14);
-	I2C2 -> TIMINGR &= ~(1<<13);
-	I2C2 -> TIMINGR &= ~(1<<12);
-	I2C2 -> TIMINGR |= (1<<11);
-	I2C2 -> TIMINGR |= (1<<10);
-	I2C2 -> TIMINGR |= (1<<9);
-	I2C2 -> TIMINGR |= (1<<8);
-	
-	//SDADEL == 0x2 = 0010
-	I2C2 -> TIMINGR &= ~(1<<19);
-	I2C2 -> TIMINGR &= ~(1<<18);
-	I2C2 -> TIMINGR |= (1<<17);
-	I2C2 -> TIMINGR &= ~(1<<16);
-	
-	//SCLDEL == 0x4 = 0100
-	I2C2 -> TIMINGR &= ~(1<<23);
-	I2C2 -> TIMINGR |= (1<<22);
-	I2C2 -> TIMINGR &= ~(1<<21);
-	I2C2 -> TIMINGR &= ~(1<<20);
-	//////////////////////////////
-	
-	//Enable PE in CR1
-	I2C2 -> CR1 |= (1<<0);
-	
-	
-	
+	//-------------------------------------------
+
+
+	//set to 100kHz
+	I2C2->TIMINGR |= 0x13;
+	I2C2->TIMINGR |= (0xF<<8);
+	I2C2->TIMINGR |= (0x2<<16);
+	I2C2->TIMINGR |= (0x4<<20);
+	I2C2->TIMINGR |= (0x1<<28);
+
+	//i2c enable
+	I2C2-> CR1 |=(1<<0);
+
+
 	//Set Transaction parameters in CR2
 	
-	//Set slave address == 0x6b = 01101011
-	I2C2 -> CR2 |= (0x6b<<1);
+	//set slave address
+	I2C2->CR2 |= (0x69<<1); 
+	//set n bytes
+	I2C2->CR2 |= (1<<16); 
+	//RD WRN
+	I2C2->CR2 &=~(1<<10); 
+	//START
+	I2C2->CR2 |=(1<<13); 
 	
-	//1 byte
-	I2C2 -> CR2 &= ~(1<<23);
-	I2C2 -> CR2 &= ~(1<<22);
-	I2C2 -> CR2 &= ~(1<<21);
-	I2C2 -> CR2 &= ~(1<<20);
-	I2C2 -> CR2 &= ~(1<<19);
-	I2C2 -> CR2 &= ~(1<<18);
-	I2C2 -> CR2 &= ~(1<<17);
-	I2C2 -> CR2 |= (1<<16);
-	
-	//RD_WRN to write = 0
-	I2C2 -> CR2 &= ~(1<<10);
-	
-	//Set Start
-	I2C2 -> CR2 |= (1<<13);
-	
-	int red = 6;
+	int orange = 6;
 	int blue = 7;
 	int green = 9;
-	int orange = 8;	
+	int red = 8;	
+	
+	
 	
 	//wait for txis or nackf
-	while((I2C2 ->ISR & (I2C_ISR_NACKF |I2C_ISR_TXIS)) == 0)
+	while(1)
 	{
+		if(I2C2 -> ISR & I2C_ISR_TXIS) break;
 	}
 	
-	if (I2C_ISR_NACKF!=0) GPIOC->ODR ^= (1<<blue);
+	if (I2C2 -> ISR & I2C_ISR_NACKF) GPIOC->ODR ^= (1<<blue);
 	
 	//address of who am i reg
 	I2C2->TXDR |= (0x0F<<0);
 	
 	//transfer complete wait
-	while(I2C_ISR_TC == 0) 
+	while(1) 
 		{
+			if(I2C2->ISR & I2C_ISR_TC) break;
 		}
-		
-		
+	
 	//Set Transaction parameters in CR2
 	
 	//Set slave address == 0x6b = 01101011
-	I2C2 -> CR2 |= (0x6b<<1);
+	I2C2 -> CR2 |= (0x69<<1);
 	
 	//1 byte
 	I2C2 -> CR2 &= ~(1<<23);
@@ -283,26 +199,31 @@ int main(void)
 	//Set Start
 	I2C2 -> CR2 |= (1<<13);
 	
+	
 	//wait for txis or nackf
-	while((I2C2 ->ISR & (I2C_ISR_NACKF |I2C_ISR_RXNE)) == 0)
+	while((I2C2 -> ISR & (I2C_ISR_RXNE)) == 0)
 	{
 	}
 	
 	if (I2C_ISR_NACKF!=0) GPIOC->ODR ^= (1<<orange);
 	
 	//transfer complete wait
-	while(I2C_ISR_TC == 0) 
+	while((I2C2->ISR & I2C_ISR_TC) == 0) 
 		{
 		}
 		
-	if(I2C_RXDR_RXDATA == 0xD4)
+		
+	if(I2C_RXDR_RXDATA == 0xD3)
 		GPIOC->ODR ^= (1<<green);
 	else
 		GPIOC->ODR ^= (1<<red);
 		
 	//Set Stop
 	I2C2 -> CR2 |= (1<<14);
-  
+	
+	
+	
+  /* USER CODE END 3 */
 }
 
 /**
