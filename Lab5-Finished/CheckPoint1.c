@@ -142,12 +142,6 @@ int main(void)
 	//i2c enable
 	I2C2-> CR1 |=(1<<0);
 
-	int red = 6;
-	int blue = 7;
-	int green = 9;
-	int orange = 8;	
-	//////////////////////////////////////
-	//////////////////////////////////////
 
 	//Set Transaction parameters in CR2
 	
@@ -159,12 +153,21 @@ int main(void)
 	I2C2->CR2 &=~(1<<10); 
 	//START
 	I2C2->CR2 |=(1<<13); 
-		
+	
+	int orange = 6;
+	int blue = 7;
+	int green = 9;
+	int red = 8;	
+	
+	
+	
 	//wait for txis or nackf
 	while(1)
 	{
 		if(I2C2 -> ISR & I2C_ISR_TXIS) break;
 	}
+	
+	if (I2C2 -> ISR & I2C_ISR_NACKF) GPIOC->ODR ^= (1<<blue);
 	
 	//address of who am i reg
 	I2C2->TXDR |= (0x0F<<0);
@@ -181,6 +184,13 @@ int main(void)
 	I2C2 -> CR2 |= (0x69<<1);
 	
 	//1 byte
+	I2C2 -> CR2 &= ~(1<<23);
+	I2C2 -> CR2 &= ~(1<<22);
+	I2C2 -> CR2 &= ~(1<<21);
+	I2C2 -> CR2 &= ~(1<<20);
+	I2C2 -> CR2 &= ~(1<<19);
+	I2C2 -> CR2 &= ~(1<<18);
+	I2C2 -> CR2 &= ~(1<<17);
 	I2C2 -> CR2 |= (1<<16);
 	
 	//RD_WRN to read = 1
@@ -195,234 +205,21 @@ int main(void)
 	{
 	}
 	
+	if (I2C_ISR_NACKF!=0) GPIOC->ODR ^= (1<<orange);
+	
 	//transfer complete wait
 	while((I2C2->ISR & I2C_ISR_TC) == 0) 
 		{
 		}
 		
 		
-	if(I2C2->RXDR == 0xD3)
+	if(I2C_RXDR_RXDATA == 0xD3)
 		GPIOC->ODR ^= (1<<green);
 	else
 		GPIOC->ODR ^= (1<<red);
 		
 	//Set Stop
 	I2C2 -> CR2 |= (1<<14);
-	
-	
-	
-	////////////////////////////////
-	//Start Gyroscope.
-	
-	///////Set Up ////////
-	//Enable X and Y
-	//set slave address
-	I2C2->CR2 |= (0x69<<1); 
-	//set n bytes - 2 Bytes
-	I2C2->CR2 |= (1<<17); 
-	I2C2->CR2 &= ~(1<<16); 
-	//RD WRN
-	I2C2->CR2 &=~(1<<10); 
-	//START
-	I2C2->CR2 |=(1<<13); 
-		
-	//wait for txis
-	while(1)
-	{
-		if(I2C2 -> ISR & I2C_ISR_TXIS) break;
-	}
-	
-	//address of Control Reg 1
-	I2C2->TXDR = 0x20;
-	
-	//wait for txis
-	while(1)
-	{
-		if(I2C2 -> ISR & I2C_ISR_TXIS) break;
-	}
-	
-	//Setup for Control Reg
-	I2C2->TXDR = 0x0B;
-	
-	//transfer complete wait
-	while(1) 
-		{
-			if(I2C2->ISR & I2C_ISR_TC) break;
-		}
-		//Set Stop
-	I2C2 -> CR2 |= (1<<14);
-	////////////////////////
-	
-	//Reading loop
-	while(1)
-	{
-		HAL_Delay(100); //every 100ms
-		
-	//set slave address
-	I2C2->CR2 |= (0x69<<1); 
-	//set n bytes
-	I2C2->CR2 &= ~(1<<17); 
-	I2C2->CR2 |= (1<<16); 
-	//RD WRN
-	I2C2->CR2 &=~(1<<10); 
-	//START
-	I2C2->CR2 |=(1<<13); 
-		
-	//wait for txis or nackf
-	while(1)
-	{
-		if(I2C2 -> ISR & I2C_ISR_TXIS) break;
-	}
-	
-	//address of out x reg
-	I2C2->TXDR = 0xA8;
-	
-	//transfer complete wait
-	while(1) 
-		{
-			if(I2C2->ISR & I2C_ISR_TC) break;
-		}
-	
-	//Set Transaction parameters in CR2
-	
-	//Set slave address == 0x6b = 01101011
-	I2C2 -> CR2 |= (0x69<<1);
-	
-	//2 byte
-	I2C2 -> CR2 |= (1<<17);
-	I2C2 -> CR2 &= ~(1<<16);
-	//RD_WRN to read = 1
-	I2C2 -> CR2 |= (1<<10);
-	
-	//Set Start
-	I2C2 -> CR2 |= (1<<13);
-	
-	
-	// Read high byte
-    while((I2C2 -> ISR & (I2C_ISR_RXNE)) == 0);
-    int8_t xL = (int8_t)(I2C2 -> RXDR);
-    
-    // Read low byte
-    while((I2C2 -> ISR & (I2C_ISR_RXNE)) == 0);
-    int8_t xH = (int8_t)(I2C2 -> RXDR);
-		
-		//transfer complete wait
-	while(1) 
-		{
-			if(I2C2->ISR & I2C_ISR_TC) break;
-		}
-		
-		//Set Stop
-	I2C2 -> CR2 |= (1<<14);
-		
-    
-    // Combine bytes (with sign extension)
-    int16_t x = (int16_t)((xH << 8) | xL);
-		
-		///////////////////////////////////////
-		/////////Read Y////////////////////////
-		//set slave address
-	I2C2->CR2 |= (0x69<<1); 
-	//set n bytes
-	I2C2->CR2 &= ~(1<<17); 
-	I2C2->CR2 |= (1<<16); 
-	//RD WRN
-	I2C2->CR2 &=~(1<<10); 
-	//START
-	I2C2->CR2 |=(1<<13); 
-		
-	//wait for txis or nackf
-	while(1)
-	{
-		if(I2C2 -> ISR & I2C_ISR_TXIS) break;
-	}
-	
-	//address of out x reg
-	I2C2->TXDR = 0xAA;
-	
-	//transfer complete wait
-	while(1) 
-		{
-			if(I2C2->ISR & I2C_ISR_TC) break;
-		}
-	
-	//Set Transaction parameters in CR2
-	
-	//Set slave address == 0x6b = 01101011
-	I2C2 -> CR2 |= (0x69<<1);
-	
-	//2 byte
-	I2C2 -> CR2 |= (1<<17);
-	I2C2 -> CR2 &= ~(1<<16);
-	//RD_WRN to read = 1
-	I2C2 -> CR2 |= (1<<10);
-	
-	//Set Start
-	I2C2 -> CR2 |= (1<<13);
-	
-	
-	// Read high byte
-    while((I2C2 -> ISR & (I2C_ISR_RXNE)) == 0);
-    int8_t yL = (int8_t)(I2C2 -> RXDR);
-    
-    // Read low byte
-    while((I2C2 -> ISR & (I2C_ISR_RXNE)) == 0);
-    int8_t yH = (int8_t)(I2C2 -> RXDR);
-		
-		//transfer complete wait
-	while(1) 
-		{
-			if(I2C2->ISR & I2C_ISR_TC) break;
-		}
-		
-		//Set Stop
-	I2C2 -> CR2 |= (1<<14);
-		
-    
-    // Combine bytes (with sign extension)
-    int16_t y = (int16_t)((yH << 8) | yL);
-		
-		
-		
-    
-     //determine which lights to turn on or off
-        if(x > 1000){
-            GPIOC->ODR |=(1<<9);
-        }
-				else if( x > 50) {}
-        else{
-            GPIOC->ODR &=~(1<<9);
-        }
-
-        if(x < -1000){
-            GPIOC->ODR |=(1<<8);
-        }
-				else if( x < -50) {}
-        else{
-            GPIOC->ODR &=~(1<<8);
-        }
-
-        if(y > 1000){
-            GPIOC->ODR |=(1<<6);
-        }
-				else if( y > 50) {}
-        else{
-            GPIOC->ODR &=~(1<<6);
-        }
-
-        if(y < -1000){
-            GPIOC->ODR |=(1<<7);
-        }
-				else if( y <  -50) {}
-        else{
-            GPIOC->ODR &=~(1<<7);
-        }
-		
-		
-		
-		
-		
-	}
 	
 	
 	
